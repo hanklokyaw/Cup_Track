@@ -83,5 +83,54 @@ def add_log():
     return jsonify({"message": "Log added successfully"}), 200
 
 
+# Function to get operator information
+def get_operator_info_from_db(operator_tag_id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT name FROM operators WHERE tag = ?", (operator_tag_id,))
+    result = cursor.fetchone()
+
+    conn.close()
+
+    if result:
+        return result[0]  # Return operator name
+    else:
+        return None
+
+# Function to get sales order information
+def get_so_info_from_db(cup_tag_id):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT so_id FROM cups_with_orders WHERE tag_id = ?", (cup_tag_id,))
+    result = cursor.fetchone()
+
+    conn.close()
+
+    if result:
+        return result[0]  # Return sales order ID
+    else:
+        return None
+
+# Flask route for getting operator information
+@app.route('/get_operator/<operator_tag_id>', methods=['GET'])
+def get_operator(operator_tag_id):
+    operator_name = get_operator_info_from_db(operator_tag_id)
+    if operator_name:
+        return jsonify({"operator_name": operator_name}), 200
+    else:
+        return jsonify({"error": "Operator not found"}), 404
+
+# Flask route for getting sales order information
+@app.route('/get_so/<cup_tag_id>', methods=['GET'])
+def get_sales_order(cup_tag_id):
+    sales_order_id = get_so_info_from_db(cup_tag_id)
+    if sales_order_id:
+        return jsonify({"sales_order_id": sales_order_id}), 200
+    else:
+        return jsonify({"error": "Sales order not found"}), 404
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5022)  # Make sure to run on an accessible IP and port
